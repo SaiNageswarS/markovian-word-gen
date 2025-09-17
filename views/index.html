@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markovian Word Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        secondary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        accent: {
+                            50: '#fdf4ff',
+                            100: '#fae8ff',
+                            200: '#f5d0fe',
+                            300: '#f0abfc',
+                            400: '#e879f9',
+                            500: '#d946ef',
+                            600: '#c026d3',
+                            700: '#a21caf',
+                            800: '#86198f',
+                            900: '#701a75',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'bounce-gentle': 'bounceGentle 2s infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(10px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        bounceGentle: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-5px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .word-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .word-card:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+        <!-- Header -->
+        <div class="text-center mb-12 animate-fade-in">
+            <div class="inline-block mb-4 animate-bounce-gentle">
+                <div class="text-4xl md:text-5xl">🎲</div>
+            </div>
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-4">
+                <span class="gradient-text">Markovian</span>
+                <br>
+                <span class="text-gray-800">Word Generator</span>
+            </h1>
+            <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed font-light">
+                Enter a list of words and let AI generate new words based on character patterns from your input!
+            </p>
+            <div class="mt-6 flex justify-center">
+                <div class="h-1 w-24 bg-gradient-to-r from-primary-500 to-accent-500 rounded-full"></div>
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="glass-effect rounded-3xl shadow-2xl p-6 md:p-8 mb-8 animate-slide-up">
+            <!-- Input Section -->
+            <div class="mb-6">
+                <label for="wordsInput" class="block text-base font-semibold text-gray-800 mb-3 flex items-center">
+                    <span class="text-lg mr-2">📝</span>
+                    Input Words
+                    <span class="text-xs font-normal text-gray-500 ml-2">(one per line or separated by commas)</span>
+                </label>
+                <textarea 
+                    id="wordsInput" 
+                    rows="8" 
+                    class="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-primary-500 focus:ring-4 focus:ring-primary-200 transition-all duration-300 resize-none font-mono text-base bg-white/80 backdrop-blur-sm shadow-inner"
+                    placeholder="Enter your words here...&#10;Example:&#10;apple&#10;book&#10;car&#10;door&#10;eat"
+                >Apple, Book, Car, Door, Eat, Friend, Green, House, Ice, Jump, Kind, Light, Music, Night, Open, Park, Quiet, River, Sky, Table, Abnegate, Brouhaha, Clandestine, Dichotomy, Ephemeral, Facetious, Gregarious, Harbinger, Idiosyncratic, Juxtapose, Lurid, Mellifluous, Nefarious, Obfuscate, Pernicious, Quixotic, Reticent, Supercilious, Ubiquitous, Vex, Accolade, Acrimony, Anemone, Baroque, Bona fide, Camaraderie, Charisma, Crescendo, Deus ex machina, Dilettante, Ebullient, Eschew, Fiasco, Glib, Idyll, Jubilant, Kismet, Lachrymose, Malaise, Nadir, Ostracize, Panacea, Pecuniary, Profligate, Quorum, Raconteur, Sycophant, Tryst, Unctuous, Verbose, Whimsical, Xenophobia, Yoke, Zeitgeist, Austerity, Banal, Capricious, Deleterious, Ebullient, Fatuous, Glib, Halcyon, Incredulous, Jocular, Lament, Meticulous, Nostalgia, Obsequious, Ponderous, Querulous, Resilient, Sagacious, Tenuous, Vagrant, Wistful, Yonder, Zest, Amalgam, Benign, Ephemeral
+            </textarea>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                <div class="flex-1">
+                    <label for="wordCount" class="block text-sm font-semibold text-gray-800 mb-2 flex items-center">
+                        <span class="text-base mr-2">🔢</span>
+                        Number of words to generate
+                    </label>
+                    <input 
+                        type="number" 
+                        id="wordCount" 
+                        value="10" 
+                        min="1" 
+                        max="50"
+                        class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-200 transition-all duration-300 text-base font-medium bg-white/80 backdrop-blur-sm shadow-inner"
+                    >
+                </div>
+                <div class="flex-1">
+                    <label for="maxLength" class="block text-sm font-semibold text-gray-800 mb-2 flex items-center">
+                        <span class="text-base mr-2">📏</span>
+                        Maximum word length
+                    </label>
+                    <input 
+                        type="number" 
+                        id="maxLength" 
+                        value="10" 
+                        min="3" 
+                        max="20"
+                        class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-200 transition-all duration-300 text-base font-medium bg-white/80 backdrop-blur-sm shadow-inner"
+                    >
+                </div>
+            </div>
+
+            <!-- Generate Button -->
+            <button 
+                id="generateBtn" 
+                onclick="generateWords()"
+                class="w-full bg-gradient-to-r from-primary-500 via-primary-600 to-accent-500 text-white font-bold py-4 px-6 rounded-2xl hover:from-accent-500 hover:via-primary-600 hover:to-primary-500 transform hover:scale-105 hover:-translate-y-1 transition-all duration-300 shadow-2xl hover:shadow-3xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-lg relative overflow-hidden group"
+            >
+                <span class="relative z-10 flex items-center justify-center">
+                    <span id="btnText" class="flex items-center">
+                        <span class="text-lg mr-2">✨</span>
+                        Generate New Words
+                    </span>
+                    <span id="btnLoading" class="hidden flex items-center">
+                        <span class="text-lg mr-2 animate-spin">⏳</span>
+                        Generating...
+                    </span>
+                </span>
+                <div class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </button>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="hidden animate-slide-up">
+            <div class="glass-effect rounded-3xl shadow-2xl p-6 md:p-8">
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6 flex items-center justify-center">
+                    <span class="text-3xl mr-3">🎯</span>
+                    Generated Words
+                </h2>
+                <div id="resultsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <!-- Results will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Section -->
+        <div id="errorSection" class="hidden animate-slide-up">
+            <div class="bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-200 rounded-3xl p-8 shadow-xl">
+                <h3 class="text-lg font-bold text-red-800 mb-2 flex items-center">
+                    <span class="text-xl mr-2">❌</span>
+                    Error
+                </h3>
+                <p id="errorMessage" class="text-red-700 text-base"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function generateWords() {
+            const wordsInput = document.getElementById('wordsInput').value.trim();
+            const wordCount = parseInt(document.getElementById('wordCount').value) || 10;
+            const maxLength = parseInt(document.getElementById('maxLength').value) || 10;
+            const generateBtn = document.getElementById('generateBtn');
+            const btnText = document.getElementById('btnText');
+            const btnLoading = document.getElementById('btnLoading');
+            const resultsSection = document.getElementById('resultsSection');
+            const errorSection = document.getElementById('errorSection');
+
+            // Hide previous results and errors
+            resultsSection.classList.add('hidden');
+            errorSection.classList.add('hidden');
+
+            // Validate input
+            if (!wordsInput) {
+                showError('Please enter some words to generate from!');
+                return;
+            }
+
+            // Parse words (support both newline and comma separation)
+            const words = wordsInput.split(/[,\n]/)
+                .map(word => word.trim())
+                .filter(word => word.length > 0);
+
+            if (words.length === 0) {
+                showError('Please enter at least one valid word!');
+                return;
+            }
+
+            // Show loading state
+            generateBtn.disabled = true;
+            btnText.classList.add('hidden');
+            btnLoading.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/generateWords', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        words: words,
+                        count: wordCount,
+                        maxLength: maxLength
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error('Server error: ' + response.status + ' - ' + errorData);
+                }
+
+                const data = await response.json();
+                displayResults(data.generatedWords);
+
+            } catch (error) {
+                showError('Failed to generate words: ' + error.message);
+            } finally {
+                // Reset button state
+                generateBtn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoading.classList.add('hidden');
+            }
+        }
+
+        function displayResults(words) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            const resultsSection = document.getElementById('resultsSection');
+            
+            resultsContainer.innerHTML = '';
+            
+            words.forEach((word, index) => {
+                // Remove the ^ and $ markers for display
+                const cleanWord = word.replace(/^\^|\$$/g, '');
+                
+                const wordElement = document.createElement('div');
+                wordElement.className = 'word-card rounded-2xl p-4 text-center transform hover:scale-105 transition-all duration-300 cursor-pointer';
+                wordElement.innerHTML = 
+                    '<div class="text-xs text-gray-500 mb-1 font-mono">#' + (index + 1) + '</div>' +
+                    '<div class="text-lg font-bold text-gray-800 font-sans">' + cleanWord + '</div>';
+                resultsContainer.appendChild(wordElement);
+            });
+            
+            resultsSection.classList.remove('hidden');
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showError(message) {
+            const errorSection = document.getElementById('errorSection');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            errorMessage.textContent = message;
+            errorSection.classList.remove('hidden');
+            errorSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Add some example words on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Focus on the textarea
+            document.getElementById('wordsInput').focus();
+        });
+    </script>
+</body>
+</html>
