@@ -49,4 +49,7 @@ Thumbs.db
 tmp/
 temp/
 
+# Documentation (optional - uncomment if you want to ignore)
+# README.md
+
 .cursorrules
